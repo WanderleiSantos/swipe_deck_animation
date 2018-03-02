@@ -1,0 +1,3 @@
+rootProject.name = 'swipe_deck_animation'
+
+include ':app'
