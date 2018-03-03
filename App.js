@@ -14,7 +14,7 @@ const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
 const ARTICLES = [
-  {id: "1", uri: require('./src/imgs/1.png')},
+  {id: "1", uri: require('./src/imgs/1.jpg')},
   {id: "2", uri: require('./src/imgs/2.jpg')},
   {id: "3", uri: require('./src/imgs/3.jpg')},
   {id: "4", uri: require('./src/imgs/4.jpg')}
@@ -26,6 +26,7 @@ export default class App extends Component{
     super(props)
 
     this.position = new Animated.ValueXY()
+    this.swipedCardPosition = new Animated.ValueXY({ x: 0, y: -SCREEN_HEIGHT})
     this.state = {
       currentIndex: 0
     }
@@ -39,10 +40,29 @@ export default class App extends Component{
       onStartShouldSetPanResponder: (e, gestureState) => true,
       onPanResponderMove: (evt, gestureState) => {
 
-        this.position.setValue({ y: gestureState.dy })
+        if ( gestureState.dy > 0 && ( this.state.currentIndex >0  ) ) {
+          this.swipedCardPosition.setValue({
+            x: 0, y: -SCREEN_HEIGHT + gestureState.dy
+          })          
+        }
+        else {
+          this.position.setValue({ y: gestureState.dy })
+        }
       },
       onPanResponderRelease: (evt, gestureState) => {
 
+        if ( this.state.currentIndex > 0 && gestureState.dy > 50 && gestureState.vy > 0.7 ) {
+          Animated.timing(this.swipedCardPosition, {
+            toValue: ({ x: 0, y: 0 }),
+            duration: 400 
+        }).start(() => {
+
+          this.setState({ currentIndex: this.state.currentIndex - 1 })
+          this.swipedCardPosition.setValue({ x: 0, y: -SCREEN_HEIGHT })
+
+        })
+        }
+        else
         if (-gestureState.dy > 50 && -gestureState.vy > 0.7) {
 
           Animated.timing(this.position, {
@@ -56,9 +76,14 @@ export default class App extends Component{
           })
         }
         else {
-          Animated.spring(this.position, {
-            toValue: ({ x: 0, y: 0 })
-          }).start()
+          Animated.parallel([
+            Animated.spring(this.position, {
+              toValue: ({ x: 0, y: 0 })
+            }),
+            Animated.spring(this.swipedCardPosition, {
+              toValue: ({ x: 0, y: -SCREEN_HEIGHT })
+            })
+          ]).start()
         }
       }
     })
@@ -69,6 +94,54 @@ export default class App extends Component{
 
     return ARTICLES.map((item, i) => {
 
+      if( i == this.state.currentIndex -1 ) {
+        return (
+        <Animated.View key={item.id} style={this.swipedCardPosition.getLayout()}
+        {...this.PanResponder.panHandlers}
+        >
+        <View style={{ flex: 1, position: 'absolute', height: SCREEN_HEIGHT, width: SCREEN_WIDTH, backgroundColor: 'white' }}>
+
+          <View style={{ flex: 2, backgroundColor: 'black' }}>
+            <Image source={ARTICLES[i].uri}
+              style={{ flex: 1, height: null, width: null, resizeMode: 'center' }}
+            ></Image>
+          </View>
+          <View style={{ flex: 3, padding: 5 }}>
+            <Text>
+            Lorem ipsum dolor sit amet, 
+              mei et quidam tibique urbanitas, omnes 
+              soleat signiferumque in cum. 
+              His minim postea ei. Pri ei esse libris 
+              placerat, mel an ullum maluisset. 
+              Ad nam oportere similique. Cu his discere 
+              erroribus accommodare, impedit appellantur 
+              mediocritatem no has. Sit ut partiendo adversarium.
+              Lorem ipsum dolor sit amet, 
+              mei et quidam tibique urbanitas, omnes 
+              soleat signiferumque in cum. 
+              His minim postea ei. Pri ei esse libris 
+              placerat, mel an ullum maluisset. 
+              Ad nam oportere similique. Cu his discere 
+              erroribus accommodare, impedit appellantur 
+              mediocritatem no has. Sit ut partiendo adversarium.
+              Lorem ipsum dolor sit amet, 
+              mei et quidam tibique urbanitas, omnes 
+              soleat signiferumque in cum. 
+              His minim postea ei. Pri ei esse libris 
+              placerat, mel an ullum maluisset. 
+              Ad nam oportere similique. Cu his discere 
+              erroribus accommodare, impedit appellantur 
+              mediocritatem no has. Sit ut partiendo adversarium.
+              Lorem ipsum dolor sit amet, 
+              mei et quidam tibique urbanitas, omnes 
+              soleat signiferumque in cum. 
+            </Text>
+          </View>
+        </View>
+      </Animated.View>   
+      )     
+      }
+      else 
       if (i < this.state.currentIndex) {
         return null
       }
@@ -114,28 +187,7 @@ export default class App extends Component{
                   mediocritatem no has. Sit ut partiendo adversarium.
                   Lorem ipsum dolor sit amet, 
                   mei et quidam tibique urbanitas, omnes 
-                  soleat signiferumque in cum. 
-                  His minim postea ei. Pri ei esse libris 
-                  placerat, mel an ullum maluisset. 
-                  Ad nam oportere similique. Cu his discere 
-                  erroribus accommodare, impedit appellantur 
-                  mediocritatem no has. Sit ut partiendo adversarium.     
-                  Lorem ipsum dolor sit amet, 
-                  mei et quidam tibique urbanitas, omnes 
-                  soleat signiferumque in cum. 
-                  His minim postea ei. Pri ei esse libris 
-                  placerat, mel an ullum maluisset. 
-                  Ad nam oportere similique. Cu his discere 
-                  erroribus accommodare, impedit appellantur 
-                  mediocritatem no has. Sit ut partiendo adversarium.
-                  Lorem ipsum dolor sit amet, 
-                  mei et quidam tibique urbanitas, omnes 
-                  soleat signiferumque in cum. 
-                  His minim postea ei. Pri ei esse libris 
-                  placerat, mel an ullum maluisset. 
-                  Ad nam oportere similique. Cu his discere 
-                  erroribus accommodare, impedit appellantur 
-                  mediocritatem no has. Sit ut partiendo adversarium.  
+                  soleat signiferumque in cum.  
                 </Text>
               </View>
             </View>
@@ -183,28 +235,7 @@ export default class App extends Component{
                   mediocritatem no has. Sit ut partiendo adversarium.
                   Lorem ipsum dolor sit amet, 
                   mei et quidam tibique urbanitas, omnes 
-                  soleat signiferumque in cum. 
-                  His minim postea ei. Pri ei esse libris 
-                  placerat, mel an ullum maluisset. 
-                  Ad nam oportere similique. Cu his discere 
-                  erroribus accommodare, impedit appellantur 
-                  mediocritatem no has. Sit ut partiendo adversarium.     
-                  Lorem ipsum dolor sit amet, 
-                  mei et quidam tibique urbanitas, omnes 
-                  soleat signiferumque in cum. 
-                  His minim postea ei. Pri ei esse libris 
-                  placerat, mel an ullum maluisset. 
-                  Ad nam oportere similique. Cu his discere 
-                  erroribus accommodare, impedit appellantur 
-                  mediocritatem no has. Sit ut partiendo adversarium.
-                  Lorem ipsum dolor sit amet, 
-                  mei et quidam tibique urbanitas, omnes 
-                  soleat signiferumque in cum. 
-                  His minim postea ei. Pri ei esse libris 
-                  placerat, mel an ullum maluisset. 
-                  Ad nam oportere similique. Cu his discere 
-                  erroribus accommodare, impedit appellantur 
-                  mediocritatem no has. Sit ut partiendo adversarium.  
+                  soleat signiferumque in cum.
                 </Text>
               </View>
             </View>
